@@ -11,7 +11,7 @@ STAGEID= monorail-staging
 PRODID= mono111
 
 GAE_PY?= python gae.py
-DEV_APPSERVER_FLAGS?=
+DEV_APPSERVER_FLAGS?= --watcher_ignore_re="(.*/lib|.*/node_modules|.*/third_party|.*/venv)"
 
 WEBPACK_PATH := ./node_modules/webpack-cli/bin/cli.js
 
@@ -57,13 +57,6 @@ prpc_proto_v3:
 	cd ../../go/src/infra/monorailv2 && \
 	cproto -proto-path ../../../../appengine/monorail/ ../../../../appengine/monorail/api/v3/api_proto/
 
-prpc_proto_google:
-	touch ../../ENV/lib/python2.7/site-packages/google/__init__.py
-	PYTHONPATH=../../ENV/lib/python2.7/site-packages \
-	PATH=../../luci/appengine/components/tools:$(PATH) \
-	../../cipd/protoc \
-	--python_out=. --prpc-python_out=. google_proto/google/api/*.proto
-
 business_proto:
 	touch ../../ENV/lib/python2.7/site-packages/google/__init__.py
 	PYTHONPATH=../../ENV/lib/python2.7/site-packages \
@@ -79,53 +72,58 @@ test_no_coverage:
 
 coverage:
 	@echo "Running tests + HTML coverage report in ~/monorail-coverage:"
-	../../test.py test appengine/monorail --html-report ~/monorail-coverage
+	../../test.py test appengine/monorail --html-report ~/monorail-coverage --coveragerc appengine/monorail/.coveragerc
 
+# Shows coverage on the tests themselves, helps illuminate when we have test
+# methods that aren't used.
 test_coverage:
 	@echo "Running tests + HTML coverage report (for tests) in ~/monorail-test-coverage:"
 	../../test.py test appengine/monorail --html-report ~/monorail-test-coverage --coveragerc appengine/monorail/.testcoveragerc
 
 # Commands for running locally using dev_appserver.
+# devserver requires an application ID (-A) to be specified.
+# We are using `-A monorail-staging` because ml spam code is set up
+# to impersonate monorail-staging in the local environment.
 serve: config_local
 	@echo "---[Starting SDK AppEngine Server]---"
-	$(GAE_PY) devserver -- $(DEV_APPSERVER_FLAGS)& $(WEBPACK_PATH) --watch
+	$(GAE_PY) devserver -A monorail-staging -- $(DEV_APPSERVER_FLAGS)& $(WEBPACK_PATH) --watch
 
 serve_email: config_local
 	@echo "---[Starting SDK AppEngine Server]---"
-	$(GAE_PY) devserver -- $(DEV_APPSERVER_FLAGS) --enable_sendmail=True& $(WEBPACK_PATH) --watch
+	$(GAE_PY) devserver -A monorail-staging -- $(DEV_APPSERVER_FLAGS) --enable_sendmail=True& $(WEBPACK_PATH) --watch
 
 # The _remote commands expose the app on 0.0.0.0, so that it is externally
 # accessible by hostname:port, rather than just localhost:port.
 serve_remote: config_local
 	@echo "---[Starting SDK AppEngine Server]---"
-	$(GAE_PY) devserver -o -- $(DEV_APPSERVER_FLAGS)& $(WEBPACK_PATH) --watch
+	$(GAE_PY) devserver -A monorail-staging -o -- $(DEV_APPSERVER_FLAGS)& $(WEBPACK_PATH) --watch
 
 serve_remote_email: config_local
 	@echo "---[Starting SDK AppEngine Server]---"
-	$(GAE_PY) devserver -o -- $(DEV_APPSERVER_FLAGS) --enable_sendmail=True& $(WEBPACK_PATH) --watch
+	$(GAE_PY) devserver -A monorail-staging -o -- $(DEV_APPSERVER_FLAGS) --enable_sendmail=True& $(WEBPACK_PATH) --watch
 
 run: serve
 
 deps: node_deps
 	rm -f static/dist/*
 
-	mkdir -p deployed_node_modules/@webcomponents/webcomponentsjs/
-
-	cp node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js \
-		deployed_node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js
-
 build_js:
 	$(WEBPACK_PATH) --mode=production
 
 clean_deps:
-	rm -rf deployed_node_modules
 	rm -rf node_modules
 
 node_deps:
 	npm ci --no-save
 
+dev_deps:
+	python -m pip install --no-deps -r requirements.dev.txt
+
 karma:
 	npx karma start --debug --coverage
+
+karma_debug:
+	npx karma start --debug
 
 pylint:
 	pylint -f parseable *py {$(PY_DIRS)}{/,/test/}*py
@@ -133,25 +131,21 @@ pylint:
 py3lint:
 	pylint --py3k *py {$(PY_DIRS)}{/,/test/}*py
 
-config: config_prod_cloud config_non_prod
+config: config_prod_cloud config_staging_cloud config_dev_cloud
 
+# Service yaml files used by gae.py are expected to be named module-<service-name>.yaml
 config_prod:
 	m4 -DPROD < app.yaml.m4 > app.yaml
 	m4 -DPROD < module-besearch.yaml.m4 > module-besearch.yaml
 	m4 -DPROD < module-latency-insensitive.yaml.m4 > module-latency-insensitive.yaml
 	m4 -DPROD < module-api.yaml.m4 > module-api.yaml
 
+# Generate yaml files used by spinnaker.
 config_prod_cloud:
-	m4 -DPROD < app-cloud.yaml.m4 > app.prod.yaml
-	m4 -DPROD < module-besearch-cloud.yaml.m4 > besearch.prod.yaml
-	m4 -DPROD < module-latency-insensitive-cloud.yaml.m4 > latency-insensitive.prod.yaml
-	m4 -DPROD < module-api-cloud.yaml.m4 > api.prod.yaml
-
-config_non_prod:
-	m4 < app-cloud.yaml.m4 > app.yaml
-	m4 < module-besearch-cloud.yaml.m4 > besearch.yaml
-	m4 < module-latency-insensitive-cloud.yaml.m4 > latency-insensitive.yaml
-	m4 < module-api-cloud.yaml.m4 > api.yaml
+	m4 -DPROD < app.yaml.m4 > app.prod.yaml
+	m4 -DPROD < module-besearch.yaml.m4 > besearch.prod.yaml
+	m4 -DPROD < module-latency-insensitive.yaml.m4 > latency-insensitive.prod.yaml
+	m4 -DPROD < module-api.yaml.m4 > api.prod.yaml
 
 config_staging:
 	m4 -DSTAGING < app.yaml.m4 > app.yaml
@@ -159,11 +153,23 @@ config_staging:
 	m4 -DSTAGING < module-latency-insensitive.yaml.m4 > module-latency-insensitive.yaml
 	m4 -DSTAGING < module-api.yaml.m4 > module-api.yaml
 
+config_staging_cloud:
+	m4 -DSTAGING < app.yaml.m4 > app.staging.yaml
+	m4 -DSTAGING < module-besearch.yaml.m4 > besearch.staging.yaml
+	m4 -DSTAGING < module-latency-insensitive.yaml.m4 > latency-insensitive.staging.yaml
+	m4 -DSTAGING < module-api.yaml.m4 > api.staging.yaml
+
 config_dev:
 	m4 -DDEV < app.yaml.m4 > app.yaml
 	m4 -DDEV < module-besearch.yaml.m4 > module-besearch.yaml
 	m4 -DDEV < module-latency-insensitive.yaml.m4 > module-latency-insensitive.yaml
 	m4 -DDEV < module-api.yaml.m4 > module-api.yaml
+
+config_dev_cloud:
+	m4 -DDEV < app.yaml.m4 > app.yaml
+	m4 -DDEV < module-besearch.yaml.m4 > besearch.yaml
+	m4 -DDEV < module-latency-insensitive.yaml.m4 > latency-insensitive.yaml
+	m4 -DDEV < module-api.yaml.m4 > api.yaml
 
 config_local:
 	m4 app.yaml.m4 > app.yaml

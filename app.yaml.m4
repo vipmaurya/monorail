@@ -1,5 +1,5 @@
-# Copyright 2016 The Chromium Authors. All rights reserved.
-# Use of this source code is governed by a BSD-style
+# Copyright 2019 The Chromium Authors. All rights reserved.
+# Use of this source code is govered by a BSD-style
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
@@ -9,10 +9,10 @@ threadsafe: no
 
 default_expiration: "10d"
 
+define(`_VERSION', `syscmd(`echo $_VERSION')')
+
 ifdef(`PROD', `
 instance_class: F4
-env_variables:
-  SENDGRID_API_KEY: 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
 automatic_scaling:
   min_idle_instances: 1
   max_instances: 1
@@ -27,8 +27,12 @@ automatic_scaling:
   max_pending_latency: 15s
 ')
 
-ifdef(`DEMO', `
+ifdef(`DEV', `
 instance_class: F4
+automatic_scaling:
+  min_idle_instances: 1
+  max_instances: 1
+  max_pending_latency: 15s
 ')
 
 handlers:
@@ -43,11 +47,6 @@ handlers:
 - url: /database-maintenance
   static_files: static/database-maintenance.html
   upload: static/database-maintenance.html
-
-- url: /deployed_node_modules
-  static_dir: deployed_node_modules
-  secure: always
-  mime_type: application/javascript
 
 - url: /static/dist
   static_dir: static/dist
@@ -77,7 +76,6 @@ handlers:
 - url: /.*
   script: monorailapp.app
   secure: always
-  login: required
 
 inbound_services:
 - mail
@@ -92,13 +90,18 @@ ifdef(`STAGING', `
 libraries:
 - name: endpoints
   version: 1.0
+- name: grpcio
+  version: 1.0.0
 - name: MySQLdb
   version: "latest"
-- name: pycrypto
-  version: "2.6"
+- name: ssl # needed for google.auth.transport and GAE_USE_SOCKETS_HTTPLIB
+  version: "2.7.11"
 
 includes:
 - gae_ts_mon
+
+env_variables:
+  VERSION_ID: '_VERSION'
 
 skip_files:
 - ^(.*/)?#.*#$
@@ -107,3 +110,4 @@ skip_files:
 - ^(.*/)?.*/RCS/.*$
 - ^(.*/)?\..*$
 - node_modules/
+- venv/

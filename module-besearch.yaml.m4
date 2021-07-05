@@ -1,7 +1,9 @@
 # Copyright 2016 The Chromium Authors. All rights reserved.
-# Use of this source code is governed by a BSD-style
+# Use of this source code is govered by a BSD-style
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
+
+define(`_VERSION', `syscmd(`echo $_VERSION')')
 
 service: besearch
 runtime: python27
@@ -24,8 +26,12 @@ automatic_scaling:
   max_pending_latency: 15s
 ')
 
-ifdef(`DEMO', `
+ifdef(`DEV', `
 instance_class: F4
+automatic_scaling:
+  min_idle_instances: 1
+  max_instances: 1
+  max_pending_latency: 15s
 ')
 
 handlers:
@@ -56,10 +62,15 @@ inbound_services:
 libraries:
 - name: endpoints
   version: 1.0
+- name: grpcio
+  version: 1.0.0
 - name: MySQLdb
   version: "latest"
-- name: django
-  version: 1.11
+- name: ssl
+  version: latest
+
+env_variables:
+  VERSION_ID: '_VERSION'
 
 skip_files:
 - ^(.*/)?#.*#$
@@ -68,3 +79,4 @@ skip_files:
 - ^(.*/)?.*/RCS/.*$
 - ^(.*/)?\..*$
 - node_modules/
+- venv/
