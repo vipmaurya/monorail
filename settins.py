@@ -331,7 +331,7 @@ else:
     # Use replicas created when testing the restore procedures on 2021-02-24
     #db_replica_prefix = 'replica-2'
 
-  elif app_id == 'monorail-317305':
+  elif app_id == 'monorail-2020':
     send_all_email_to = None  # Deliver it to the intended users.
     # The Google Cloud SQL databases to use.
     db_cloud_project = app_id
@@ -360,7 +360,7 @@ physical_db_name_format = (db_cloud_project + ':' + db_region + ':%s')
 
 # preferred domains to display
 preferred_domains = {
-    'monorail-317305.appspot.com': 'monorail.altorumleren.com',
+    'monorail-2020.appspot.com': 'monorail.altorumleren.com',
     'monorail-staging.appspot.com': 'bugs-staging.chromium.org',
     'monorail-dev.appspot.com': 'bugs-dev.chromium.org'}
 
