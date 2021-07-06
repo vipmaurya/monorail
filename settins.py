@@ -487,7 +487,7 @@ maximum_snapshot_period_end = 4294967295
 chart_query_max_rows = 10000
 
 # Client ID to use for loading the Google API client, gapi.js.
-if app_identity.get_application_id() == 'monorail-317305':
+if app_identity.get_application_id() == 'monorail-2020':
   gapi_client_id = (
     '679746765624-tqaakho939p2mc7eb65t4ecrj3gj08rt.apps.googleusercontent.com')
 else:
