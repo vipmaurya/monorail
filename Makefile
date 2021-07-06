@@ -8,7 +8,7 @@
 
 DEVID = monorail-dev
 STAGEID= monorail-staging
-PRODID= mono111
+PRODID= monorail-2020
 
 GAE_PY?= python gae.py
 DEV_APPSERVER_FLAGS?= --watcher_ignore_re="(.*/lib|.*/node_modules|.*/third_party|.*/venv)"
