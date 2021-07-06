@@ -17,7 +17,7 @@ from framework import framework_constants
 from proto import project_pb2
 from proto import site_pb2
 
-PRODID=monorail-2023
+
 
 # This file is divided into the following parts:
 # 1. Settings you must edit before deploying your site.
@@ -333,7 +333,7 @@ else:
     # Use replicas created when testing the restore procedures on 2021-02-24
     #db_replica_prefix = 'replica-2'
 
-  elif app_id == '$PRODID':
+  elif app_id == 'monorail-2023':
     send_all_email_to = None  # Deliver it to the intended users.
     # The Google Cloud SQL databases to use.
     db_cloud_project = app_id
@@ -362,7 +362,7 @@ physical_db_name_format = (db_cloud_project + ':' + db_region + ':%s')
 
 # preferred domains to display
 preferred_domains = {
-    '$PRODID.appspot.com': 'monorail.altorumleren.com',
+    'monorail-2023.appspot.com': 'monorail.altorumleren.com',
     'monorail-staging.appspot.com': 'bugs-staging.chromium.org',
     'monorail-dev.appspot.com': 'bugs-dev.chromium.org'}
 
@@ -489,7 +489,7 @@ maximum_snapshot_period_end = 4294967295
 chart_query_max_rows = 10000
 
 # Client ID to use for loading the Google API client, gapi.js.
-if app_identity.get_application_id() == '$PRODID':
+if app_identity.get_application_id() == 'monorail-2023':
   gapi_client_id = (
     '679746765624-tqaakho939p2mc7eb65t4ecrj3gj08rt.apps.googleusercontent.com')
 else:
