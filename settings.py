@@ -17,7 +17,7 @@ from framework import framework_constants
 from proto import project_pb2
 from proto import site_pb2
 
-PRODID=monorail-2020
+PRODID=monorail-2023
 
 # This file is divided into the following parts:
 # 1. Settings you must edit before deploying your site.
