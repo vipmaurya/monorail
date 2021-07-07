@@ -1,0 +1,47 @@
+Monorail App Setup 
+
+1:- Please create account in G-Cloud and setup billing in your account
+
+2:- Create Github account for monorail settings files and do not use '@' in your github password 
+
+3:- Push all files form Monorail-Project-Settings-Folder to your github accpount
+
+4:- Give permissions to script file using below command
+    
+    chmod +x gcloud-instance-setup.sh
+
+5:-  Now run gcloud-instance-setup-sh script using below command and follow the instructions
+    
+    ./gcloud-instance-setup.sh
+
+6:-   We need to create an empty ClientConfig  in CloudDatastore, goto: https://console.cloud.google.com/datastore/entities
+
+	6.1 Select data-store mode option and select region nam5 (us-central)
+    6.2. Create an entity called ClientConfig in the default namespace 
+	6.3. It should have a custom name identifier.
+	6.4. The custom name must be: api_client_configs
+	6.5. Give it a property called: configs
+	6.6. Set the type to Text.
+	6.6. Click create.
+
+7:- Once first script process is done then login to your G-Cloud VM using below command
+
+    gcloud compute ssh $INSTANCE_NAME
+
+   Note:- Please make sure your VM instance name is correct 
+
+
+8:- Now run monorail-setup.sh script in n and follow the instructions 
+
+Note:- if you are getting error then please follow the below instructions
+
+9:- Now Please run again eval command 
+
+     cd /home/$USER/monorail_local/infra/appengine/monorail/; eval `../../go/env.py`
+
+10:- Now run app deploy command
+
+     make deploy_prod
+
+
+
