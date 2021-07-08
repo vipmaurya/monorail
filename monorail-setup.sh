@@ -70,7 +70,7 @@ if [ -f SQL-instance-completed.log ]; then
             --database-version=MYSQL_5_6 \
             --cpu=1 \
             --memory=3840MB \
-            --region=us-central1 \
+            --region=asia-south1 \
             --storage-size=10GB \
             --availability-type=zonal \
             --authorized-networks=$INSTANCE_IP/32 

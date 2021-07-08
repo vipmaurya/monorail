@@ -32,11 +32,11 @@ if [ -f gcloud-account-setup-completed.log ]; then
         
         BILLING_ACCOUNT=$(gcloud alpha billing accounts list | awk 'NR==2 {print $1}')
         gcloud beta billing projects link $PROJECT_ID --billing-account=$BILLING_ACCOUNT
-        gcloud compute project-info add-metadata --metadata google-compute-default-region=us-central1,google-compute-default-zone=us-central1-a
+        gcloud compute project-info add-metadata --metadata google-compute-default-region=asia-south1,google-compute-default-zone=asia-south1-a
         read -p 'INSTANCE_NAME:' INSTANCE_NAME
         echo "Creating VM Instance ....."
         gcloud compute instances create $INSTANCE_NAME --project=$PROJECT_ID \
-            --zone=us-central1-a \
+            --zone=asia-south1-a \
             --image=ubuntu-1804-bionic-v20210623 \
             --image-project=ubuntu-os-cloud \
             --machine-type=e2-medium \

@@ -65,7 +65,7 @@ send_noreply_email_as_format = 'monorail+noreply@%(domain)s'
 db_database_name = 'monorail'
 db_primary_name = 'monorail'
 db_replica_prefix = 'monorail-replica'
-db_region = 'us-central1'
+db_region = 'asia-south1'
 
 # The default connection pool size for mysql connections.
 db_cnxn_pool_size = 10
@@ -136,7 +136,7 @@ banner_message = ''
 banned_user_domains = []
 
 # We use this for specifying cloud task parent
-CLOUD_TASKS_REGION = 'us-central1'
+CLOUD_TASKS_REGION = 'asia-south1'
 
 # We only send subscription notifications to users who have visited the
 # site in the last 6 months.
@@ -317,7 +317,7 @@ else:
     # the following command to find it.
     # ```
     # gcloud redis instances list --project monorail-staging \
-    #   --region us-central1
+    #   --region asia-south1
     # ````
     #redis_host = '10.228.109.51'
 
