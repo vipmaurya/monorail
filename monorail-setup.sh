@@ -104,7 +104,7 @@ if [ -f Bucket-permissions-completed.log ]; then
 	else
 
 
-        SERVICE_ACCOUNT_NUMBER=$(gcloud iam service-accounts list | awk 'NR==3 {print $6}' | sed 's/-.*//')
+        SERVICE_ACCOUNT_NUMBER=$(gcloud iam service-accounts list | awk '/[Cc]ompute Engine/ { print $6 }' | sed 's/-.*//')
         read -p 'PROJECT_ID:' PROJECT_ID
         gsutil iam ch serviceAccount:$SERVICE_ACCOUNT_NUMBER@cloudbuild.gserviceaccount.com:roles/firebase.viewer gs://staging.$PROJECT_ID.appspot.com
         gsutil iam ch serviceAccount:$SERVICE_ACCOUNT_NUMBER@cloudbuild.gserviceaccount.com:roles/cloudbuild.serviceAgent gs://staging.$PROJECT_ID.appspot.com
